@@ -28,55 +28,55 @@ const files: FileInfo[] = [
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "4",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "5",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "6",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "7",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "8",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "9",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "10",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "11",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
     },
     {
-        id: "3",
+        id: "12",
         name: 'Spreadsheet.xlsx',
         size: '800 KB',
         expires: '2024-03-25',
@@ -86,9 +86,9 @@ const files: FileInfo[] = [
 const FileList = (): JSX.Element => {
     return (
         <div className="overflow-x-auto">
-            <div className="rounded-lg bg-neutral-800 shadow-lg">
-                <table className="min-w-full divide-y divide-neutral-500">
-                    <thead>
+            <div className="rounded-lg bg-neutral-100 dark:bg-neutral-800 shadow-lg">
+                <table className="min-w-full divide-y divide-neutral-500 rounded-lg">
+                    <thead className="bg-neutral-100 dark:bg-neutral-800 sticky top-0 z-10 rounded-t-lg">
                         <tr>
                             <th
                                 scope="col"
@@ -110,8 +110,7 @@ const FileList = (): JSX.Element => {
                             </th>
                             <th
                                 scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                            >
+                                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-0">
                                 Actions
                             </th>
                         </tr>
@@ -128,12 +127,18 @@ const FileList = (): JSX.Element => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                                     {file.expires}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm flex flex-row gap-4">
                                     <button
-                                        className="text-neutral-300 underline font-bold py-2 px-4 rounded"
+                                        className="text-neutral-700 dark:text-neutral-200 underline font-semibold py-2 rounded"
                                         onClick={() => alert(`View ${file.name}`)}
                                     >
                                         View
+                                    </button>
+                                    <button
+                                        className="text-neutral-700 dark:text-neutral-200 underline font-semibold py-2 rounded"
+                                        onClick={() => alert(`View ${file.name}`)}
+                                    >
+                                        Remove
                                     </button>
                                 </td>
                             </tr>
@@ -148,7 +153,7 @@ const FileList = (): JSX.Element => {
 
 const Search = (): JSX.Element => {
     return (
-        <div className="relative shadow-lg px-4 rounded-lg bg-neutral-800">
+        <div className="relative shadow-lg px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800">
             <label htmlFor="Search" className="sr-only"> Search </label>
 
             <input

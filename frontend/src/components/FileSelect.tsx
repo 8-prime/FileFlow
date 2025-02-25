@@ -14,7 +14,7 @@ const FileSelect = ({ selectedFiles }: FileSelectProps): JSX.Element => {
     const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
     return (
-        <div className="cursor-pointer w-full h-full flex flex-col p-4 justify-start items-center bg-stone-200 dark:bg-neutral-800 rounded-lg border-dashed border-[1px]" {...getRootProps()}>
+        <div className="cursor-pointer w-full h-96 flex flex-col p-4 justify-start items-center bg-stone-200 dark:bg-neutral-800 rounded-lg border-dashed border-[1px]" {...getRootProps()}>
             <input
                 {...getInputProps()}
             />

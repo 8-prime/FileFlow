@@ -17,31 +17,22 @@ const DownloadLimit = ({ limit, setLimit }: DownloadLimitProps): JSX.Element => 
 
 
 const Upload = (): JSX.Element => {
-    const [limit, setLimit] = useState<number>(1)
-    const [files, setFiles] = useState<File[]>([])
-    const [expiry, setExpiry] = useState<number | undefined>(undefined)
-    const removeSelectedFiles = (file: string) => {
-        setFiles(files.filter(f => f.name != file))
-    }
-
     return (
-        <main className="grow w-full">
-            <section className="w-full flex justify-center pt-10">
-                <div className="container px-4 md:px-6">
-                    <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                        <div className="space-y-2">
-                            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Quick file sharing</h1>
-                            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                                Upload your files securely and share them with anyone. Set expiration dates and download limits.
-                            </p>
-                        </div>
-                        <div className="w-full max-w-md">
-                            <FileUpload />
-                        </div>
+        <section className="grow w-full flex flex-col justify-center items-center pt-10">
+            <div className="container px-4 md:px-6">
+                <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Quick file sharing</h1>
+                        <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                            Upload your files securely and share them with anyone. Set expiration dates and download limits.
+                        </p>
+                    </div>
+                    <div className="w-full max-w-md">
+                        <FileUpload />
                     </div>
                 </div>
-            </section>
-        </main>
+            </div>
+        </section>
     )
 }
 

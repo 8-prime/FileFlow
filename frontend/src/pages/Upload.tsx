@@ -1,14 +1,5 @@
-import { JSX, useState } from "react"
-import FileSelect from "../components/FileSelect";
-import FileDisplay from "../components/FileDisplay";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button";
+import { JSX, useState } from "react";
+import { FileUpload } from "@/components/FileUpload";
 
 type DownloadLimitProps = {
     limit: number,
@@ -34,47 +25,23 @@ const Upload = (): JSX.Element => {
     }
 
     return (
-        <div className="grow flex flex-col justify-center items-center px-2 md:px-52 lg:px-96">
-            <div className="w-full flex flex-col justify-center items-center gap-4">
-                {
-                    files.length === 0 &&
-                    <FileSelect selectedFiles={setFiles} />
-                }
-                {
-                    files.length > 0 &&
-                    <>
-                        <FileDisplay files={files} fileRemoved={removeSelectedFiles} />
-                        <DownloadLimit limit={limit} setLimit={setLimit} />
-                        <Select onValueChange={(v) => setExpiry(+v)}>
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Theme" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="undefined">No expiry</SelectItem>
-                                <SelectItem value="1">1 day</SelectItem>
-                                <SelectItem value="5">5 days</SelectItem>
-                                <SelectItem value="14">14 days</SelectItem>
-                                <SelectItem value="30">30 days</SelectItem>
-                                <Button
-                                    className="w-full px-2"
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.stopPropagation()
-                                        setExpiry(undefined)
-                                    }}
-                                >
-                                    Clear
-                                </Button>
-                            </SelectContent>
-                        </Select>
-                        <button className="w-full bg-teal-900 px-2 py-4 rounded-lg shadow-lg">
-                            Upload
-                        </button>
-                    </>
-                }
-            </div>
-        </div>
+        <main className="grow w-full">
+            <section className="w-full flex justify-center pt-10">
+                <div className="container px-4 md:px-6">
+                    <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                        <div className="space-y-2">
+                            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Quick file sharing</h1>
+                            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                                Upload your files securely and share them with anyone. Set expiration dates and download limits.
+                            </p>
+                        </div>
+                        <div className="w-full max-w-md">
+                            <FileUpload />
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
     )
 }
 

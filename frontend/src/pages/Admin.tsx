@@ -1,187 +1,264 @@
-import { SearchIcon } from "lucide-react";
-import { JSX } from "react";
+import { useState } from "react"
+import { Copy, MoreHorizontal, Trash } from "lucide-react"
 
-type FileInfo = {
-    name: string,
-    size: string,
-    expires: string,
-    id: string
-}
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from "sonner"
+import { NavLink } from "react-router"
 
-const files: FileInfo[] = [
+// Mock data for demonstration
+const mockFiles = [
     {
-        id: "1",
-        name: 'Document.pdf',
-        size: '2.5 MB',
-        expires: '2024-03-15',
+        id: "file1",
+        name: "presentation.pptx",
+        size: "4.2 MB",
+        uploadedAt: "2023-06-12T10:30:00Z",
+        expiresAt: "2023-06-19T10:30:00Z",
+        downloads: 3,
+        maxDownloads: 10,
+        status: "active",
     },
     {
-        id: "2",
-        name: 'Image.jpg',
-        size: '1.2 MB',
-        expires: '2024-03-20',
+        id: "file2",
+        name: "document.pdf",
+        size: "1.8 MB",
+        uploadedAt: "2023-06-10T14:15:00Z",
+        expiresAt: "2023-06-17T14:15:00Z",
+        downloads: 5,
+        maxDownloads: 5,
+        status: "expired",
     },
     {
-        id: "3",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
+        id: "file3",
+        name: "image.jpg",
+        size: "3.5 MB",
+        uploadedAt: "2023-06-11T09:45:00Z",
+        expiresAt: "2023-07-11T09:45:00Z",
+        downloads: 2,
+        maxDownloads: 20,
+        status: "active",
     },
     {
-        id: "4",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
+        id: "file4",
+        name: "spreadsheet.xlsx",
+        size: "2.1 MB",
+        uploadedAt: "2023-06-09T16:20:00Z",
+        expiresAt: "2023-06-16T16:20:00Z",
+        downloads: 0,
+        maxDownloads: 3,
+        status: "active",
     },
     {
-        id: "5",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
+        id: "file5",
+        name: "archive.zip",
+        size: "15.7 MB",
+        uploadedAt: "2023-06-08T11:10:00Z",
+        expiresAt: "2023-06-15T11:10:00Z",
+        downloads: 1,
+        maxDownloads: 1,
+        status: "expired",
     },
-    {
-        id: "6",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-    {
-        id: "7",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-    {
-        id: "8",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-    {
-        id: "9",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-    {
-        id: "10",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-    {
-        id: "11",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-    {
-        id: "12",
-        name: 'Spreadsheet.xlsx',
-        size: '800 KB',
-        expires: '2024-03-25',
-    },
-];
+]
 
-const FileList = (): JSX.Element => {
+export default function Admin() {
+    const [files, setFiles] = useState(mockFiles)
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    }
+
+    const copyLink = (id: string) => {
+        const link = `${window.location.origin}/download/${id}`
+        navigator.clipboard.writeText(link)
+        toast("Link copied", {
+            description: "The download link has been copied to your clipboard.",
+        })
+    }
+
+    const deleteFile = (id: string) => {
+        setFiles(files.filter((file) => file.id !== id))
+        toast("File deleted", {
+            description: "The file has been permanently deleted.",
+        })
+    }
+
     return (
-        <div className="overflow-x-auto">
-            <div className="rounded-lg bg-neutral-100 dark:bg-neutral-800 shadow-lg">
-                <table className="min-w-full divide-y divide-neutral-500 rounded-lg">
-                    <thead className="bg-neutral-100 dark:bg-neutral-800 sticky top-0 z-10 rounded-t-lg">
-                        <tr>
-                            <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                            >
-                                Name
-                            </th>
-                            <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium  uppercase tracking-wider"
-                            >
-                                Size
-                            </th>
-                            <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                            >
-                                Expires
-                            </th>
-                            <th
-                                scope="col"
-                                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider w-0">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className=" divide-y divide-neutral-600">
-                        {files.map((file) => (
-                            <tr key={file.id}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    {file.name}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    {file.size}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                    {file.expires}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm flex flex-row gap-4">
-                                    <button
-                                        className="text-neutral-700 dark:text-neutral-200 underline font-semibold py-2 rounded"
-                                        onClick={() => alert(`View ${file.name}`)}
-                                    >
-                                        View
-                                    </button>
-                                    <button
-                                        className="text-neutral-700 dark:text-neutral-200 underline font-semibold py-2 rounded"
-                                        onClick={() => alert(`View ${file.name}`)}
-                                    >
-                                        Remove
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-}
+        <div className="grow flex flex-col">
+            <header className="border-b">
+                <div className="container flex h-16 items-center px-4 sm:px-6 lg:px-8">
+                    <NavLink to="/" className="font-bold">
+                        FileFlow
+                    </NavLink>
+                    <nav className="ml-auto flex gap-4 sm:gap-6">
+                        <NavLink to="/" className="text-sm font-medium">
+                            Upload
+                        </NavLink>
+                        <NavLink to="/admin" className="text-sm font-medium text-primary">
+                            Admin
+                        </NavLink>
+                    </nav>
+                </div>
+            </header>
+            <main className="w-full flex flex-col justify-center items-center">
+                <div className="container py-6 md:py-10">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+                        <Button asChild>
+                            <NavLink to="/">Upload New Files</NavLink>
+                        </Button>
+                    </div>
 
+                    <Tabs defaultValue="all" className="mt-6">
+                        <TabsList>
+                            <TabsTrigger value="all">All Files</TabsTrigger>
+                            <TabsTrigger value="active">Active</TabsTrigger>
+                            <TabsTrigger value="expired">Expired</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="all" className="mt-4">
+                            <FileTable files={files} onCopyLink={copyLink} onDeleteFile={deleteFile} />
+                        </TabsContent>
+                        <TabsContent value="active" className="mt-4">
+                            <FileTable
+                                files={files.filter((file) => file.status === "active")}
+                                onCopyLink={copyLink}
+                                onDeleteFile={deleteFile}
+                            />
+                        </TabsContent>
+                        <TabsContent value="expired" className="mt-4">
+                            <FileTable
+                                files={files.filter((file) => file.status === "expired")}
+                                onCopyLink={copyLink}
+                                onDeleteFile={deleteFile}
+                            />
+                        </TabsContent>
+                    </Tabs>
 
-const Search = (): JSX.Element => {
-    return (
-        <div className="relative shadow-lg px-4 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800">
-            <label htmlFor="Search" className="sr-only"> Search </label>
-
-            <input
-                type="text"
-                id="Search"
-                placeholder="Search for..."
-                className="w-full rounded-md border-gray-200 py-2.5 pe-10 shadow-xs sm:text-sm"
-            />
-
-            <span className="absolute inset-y-0 end-0 grid w-10 place-content-center">
-                <button type="button" className="text-gray-600 hover:text-gray-700">
-                    <span className="sr-only">Search</span>
-                    <SearchIcon />
-                </button>
-            </span>
-        </div>
-    );
-}
-
-const Admin = (): JSX.Element => {
-    return (
-        <div className="w-full h-full overflow-hidden grid grid-rows-[auto_auto_auto_1fr] px-2 md:px-5 lg:px-40 gap-4 py-20">
-            <h1 className="text-4xl font-semibold">Uploaded files</h1>
-            <p className="text-neutral-400">There have been 25 uploaded files (2.5GB) in the last 30 days</p>
-            <Search />
-            <FileList />
+                    <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle>Total Uploads</CardTitle>
+                                <CardDescription>All time file uploads</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-4xl font-bold">{files.length}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle>Active Files</CardTitle>
+                                <CardDescription>Files available for download</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-4xl font-bold">{files.filter((file) => file.status === "active").length}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle>Total Downloads</CardTitle>
+                                <CardDescription>All time file downloads</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-4xl font-bold">{files.reduce((total, file) => total + file.downloads, 0)}</div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </main>
         </div>
     )
 }
 
-export default Admin;
+function FileTable({
+    files,
+    onCopyLink,
+    onDeleteFile,
+}: {
+    files: typeof mockFiles
+    onCopyLink: (id: string) => void
+    onDeleteFile: (id: string) => void
+}) {
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    }
+
+    return (
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead className="hidden md:table-cell">Size</TableHead>
+                        <TableHead className="hidden md:table-cell">Uploaded</TableHead>
+                        <TableHead className="hidden md:table-cell">Expires</TableHead>
+                        <TableHead>Downloads</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {files.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
+                                No files found
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        files.map((file) => (
+                            <TableRow key={file.id}>
+                                <TableCell className="font-medium">{file.name}</TableCell>
+                                <TableCell className="hidden md:table-cell">{file.size}</TableCell>
+                                <TableCell className="hidden md:table-cell">{formatDate(file.uploadedAt)}</TableCell>
+                                <TableCell className="hidden md:table-cell">{formatDate(file.expiresAt)}</TableCell>
+                                <TableCell>
+                                    {file.downloads}/{file.maxDownloads === 0 ? "∞" : file.maxDownloads}
+                                </TableCell>
+                                <TableCell>
+                                    <div
+                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${file.status === "active" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                            }`}
+                                    >
+                                        {file.status === "active" ? "Active" : "Expired"}
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <MoreHorizontal className="h-4 w-4" />
+                                                <span className="sr-only">Open menu</span>
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => onCopyLink(file.id)}>
+                                                <Copy className="mr-2 h-4 w-4" />
+                                                Copy Link
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => onDeleteFile(file.id)}
+                                                className="text-red-600 focus:text-red-600"
+                                            >
+                                                <Trash className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+        </div>
+    )
+}

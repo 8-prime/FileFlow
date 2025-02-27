@@ -11,7 +11,7 @@ export default function Success() {
     const [copied, setCopied] = useState(false)
     const params = useParams();
     const fileId = params.id || "demo123"
-    const shareUrl = `${window.location.origin}/download/${fileId}`
+    const shareUrl = `${window.location.origin}/files/${fileId}`
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(shareUrl)

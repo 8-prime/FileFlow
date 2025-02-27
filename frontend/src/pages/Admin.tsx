@@ -92,8 +92,8 @@ export default function Admin() {
     return (
         <div className="grow flex flex-col">
             <header className="border-b">
-                <div className="container flex h-16 items-center px-4 sm:px-6 lg:px-8">
-                    <NavLink to="/" className="font-bold">
+                <div className="w-full flex h-16 items-center px-4 sm:px-6 lg:px-8">
+                    <NavLink to="/" className="font-bold text-4xl">
                         FileFlow
                     </NavLink>
                     <nav className="ml-auto flex gap-4 sm:gap-6">

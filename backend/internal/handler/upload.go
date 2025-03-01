@@ -125,3 +125,37 @@ func GetUpload(repo *repository.Repository) http.HandlerFunc {
 		}
 	}
 }
+
+func GetFile(repo *repository.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "id")
+		filename := chi.URLParam(r, "file")
+
+		upload, err := repo.GetUpload(r.Context(), idParam)
+		if err != nil {
+			http.Error(w, "Failed to get upload", http.StatusBadRequest)
+			return
+		}
+		if !checkUploadExpiry(upload, repo, r) {
+			http.Error(w, "Upload is expired", http.StatusBadRequest)
+			return
+		}
+
+		filePath := path.Join("./uploads", upload.ID, filename)
+		log.Printf("Trying to serve file. %s", filePath)
+		http.ServeFile(w, r, filePath)
+	}
+}
+
+func checkUploadExpiry(entry model.UploadInfo, repo *repository.Repository, r *http.Request) bool {
+	if entry.EXPIRES < time.Now().UTC().Unix() {
+		repo.UpdateStatus(r.Context(), entry.ID, model.StatusExpired)
+		return false
+	}
+	//validate downloads not exhausted
+	if entry.CURRENT_DOWNLOADS >= entry.MAX_DOWNLOADS {
+		repo.UpdateStatus(r.Context(), entry.ID, model.StatusExpired)
+		return false
+	}
+	return true
+}

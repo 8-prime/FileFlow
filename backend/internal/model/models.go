@@ -17,9 +17,18 @@ const (
 )
 
 type UploadInfo struct {
+	ID                string `json:"id"`
+	MAX_DOWNLOADS     int64  `json:"maxDownloads"`
+	CURRENT_DOWNLOADS int64  `json:"currentDownloads"`
 	UPLOADED          int64  `json:"uploaded"`
 	EXPIRES           int64  `json:"expires"`
-	CURRENT_DOWNLOADS int64  `json:"currentDownloads"`
-	MAX_DOWNLOADS     int64  `json:"maxDownloads"`
 	STATUS            Status `json:"status"`
+}
+
+type DownloadInfo struct {
+	FILES []string `json:"files"`
+}
+
+type DownloadRequest struct {
+	FILE string `json:"file"`
 }

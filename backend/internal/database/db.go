@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"time"
 
+	_ "embed"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -13,6 +15,9 @@ type Config struct {
 	MaxConns    int
 	IdleTimeout time.Duration
 }
+
+//go:embed 0001_initial.sql
+var migration string
 
 // InitDB initializes and configures the SQLite database
 func InitDB(cfg Config) (*sql.DB, error) {
@@ -25,6 +30,8 @@ func InitDB(cfg Config) (*sql.DB, error) {
 	db.SetMaxOpenConns(cfg.MaxConns)
 	db.SetMaxIdleConns(cfg.MaxConns)
 	db.SetConnMaxLifetime(cfg.IdleTimeout)
+
+	db.Exec(migration)
 
 	// Test the connection
 	if err := db.Ping(); err != nil {

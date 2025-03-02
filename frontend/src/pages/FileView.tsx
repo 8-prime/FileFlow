@@ -25,6 +25,7 @@ const FileView = (): JSX.Element => {
         return `/api/upload/${uploadId}/${encodeURIComponent(file)}`
     }
 
+
     return (
         <div className="grow w-full flex flex-col items-center justify-center p-4">
             <Card className="w-full max-w-md">

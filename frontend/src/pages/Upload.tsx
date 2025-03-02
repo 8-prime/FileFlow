@@ -1,20 +1,5 @@
-import { JSX, useState } from "react";
+import { JSX } from "react";
 import { FileUpload } from "@/components/FileUpload";
-
-type DownloadLimitProps = {
-    limit: number,
-    setLimit: (newLimit: number) => void
-}
-
-const DownloadLimit = ({ limit, setLimit }: DownloadLimitProps): JSX.Element => {
-    return (
-        <div className="w-full flex flex-col gap-2">
-            <p>Download limit</p>
-            <input value={limit} onChange={(e) => setLimit(+e.target.value)} placeholder="Set how often this should be downloadable" className="w-full bg-neutral-100 dark:bg-neutral-800 p-3 rounded-lg shadow-lg" type="number" />
-        </div>
-    )
-}
-
 
 const Upload = (): JSX.Element => {
     return (

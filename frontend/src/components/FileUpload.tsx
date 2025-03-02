@@ -1,27 +1,21 @@
 import type React from "react"
 
 import { useState } from "react"
-import { FileUpIcon, Upload, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
 import { useNavigate } from "react-router"
 import FileUploadStep from "./FileUploadStep"
 import FileConfigurationStep from "./FileConfigurationStep"
-
-
-
-
-
-
-
-
+import { Progress } from "./ui/progress"
+import { UploadInfo } from "@/models/models"
+import { toast } from "sonner"
+import { uploadFilesWithCallbacks } from "@/api/api"
 
 export function FileUpload() {
+    const [uploading, setUploading] = useState<boolean>(false)
+    const [progress, setProgress] = useState<number>(0)
+
     const navigate = useNavigate();
     const [step, setStep] = useState<"upload" | "configure">("upload")
     const [files, setFiles] = useState<File[]>([])
@@ -69,15 +63,30 @@ export function FileUpload() {
         }
     }
 
-    const handleUpload = () => {
-        // Here you would implement the actual file upload logic
-        // For now, we'll just simulate a successful upload and redirect
-        console.log("Uploading files:", files)
-        console.log("Download limit:", downloadLimit)
-        console.log("Expiration:", expiration)
+    const onUploadComplete = (uploadInfo: UploadInfo) => {
+        setUploading(false)
+        navigate(`/success/${uploadInfo.id}`)
+    }
 
-        // Simulate upload and redirect to success page
-        navigate("/success/123")
+    const onErrorOrAbort = (message: string) => {
+        setUploading(false)
+        toast("Uploading fialed", {
+            description: message,
+        })
+    }
+
+    const onProgress = (progress: number) => {
+        setProgress(progress)
+
+    }
+
+    const handleUpload = () => {
+        uploadFilesWithCallbacks(files, expiration, downloadLimit, {
+            onError: onErrorOrAbort,
+            onProgress: onProgress,
+            onSuccess: onUploadComplete,
+            onAbort: onErrorOrAbort
+        })
     }
     return (
         <Card className="w-full">
@@ -117,10 +126,21 @@ export function FileUpload() {
                     </Button>
                 ) : (
                     <>
-                        <Button variant="outline" onClick={() => setStep("upload")}>
-                            Back
-                        </Button>
-                        <Button onClick={handleUpload}>Upload and Share</Button>
+                        {
+                            !uploading &&
+                            <>
+                                <Button variant="outline" onClick={() => setStep("upload")}>
+                                    Back
+                                </Button>
+                                <Button onClick={handleUpload}>Upload and Share</Button>
+                            </>
+                        }
+                        {
+                            uploading &&
+                            <div className="flex flex-col w-full">
+                                <Progress value={progress} />
+                            </div>
+                        }
                     </>
                 )}
             </CardFooter>

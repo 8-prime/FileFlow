@@ -18,9 +18,9 @@ func (app *Application) RegisterRoutes() {
 		})
 
 		r.Route("/upload", func(r chi.Router) {
-			r.Post("/", handler.HandleUpload(repo))
-			r.Get("/{id}", handler.GetDownloadInfo(repo))
-			r.Get("/{id}/{file}", handler.GetFile(repo))
+			r.Post("/", handler.HandleUpload(repo, &app.Config.SERVER))
+			r.Get("/{id}", handler.GetDownloadInfo(repo, &app.Config.SERVER))
+			r.Get("/{id}/{file}", handler.GetFile(repo, &app.Config.SERVER))
 		})
 
 	})

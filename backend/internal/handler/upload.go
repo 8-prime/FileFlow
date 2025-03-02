@@ -18,7 +18,12 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func HandleUpload(repo *repository.Repository) http.HandlerFunc {
+// Config holds database configuration
+type UploadConfig struct {
+	FilesPath string
+}
+
+func HandleUpload(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(math.MaxInt64)
 		if err != nil {
@@ -43,7 +48,7 @@ func HandleUpload(repo *repository.Repository) http.HandlerFunc {
 			http.Error(w, "Failed to save upload", http.StatusInternalServerError)
 			return
 		}
-		filesDir := path.Join("./uploads", newEntry.ID)
+		filesDir := path.Join(cfg.FilesPath, newEntry.ID)
 		os.MkdirAll(filesDir, os.ModePerm)
 
 		for _, fileHeader := range files {
@@ -82,7 +87,7 @@ func HandleUpload(repo *repository.Repository) http.HandlerFunc {
 
 }
 
-func GetDownloadInfo(repo *repository.Repository) http.HandlerFunc {
+func GetDownloadInfo(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idParam := chi.URLParam(r, "id")
 		log.Printf("Got request with id: %s", idParam)
@@ -106,7 +111,7 @@ func GetDownloadInfo(repo *repository.Repository) http.HandlerFunc {
 		}
 
 		//read files from fs
-		filesDir := path.Join("./uploads", entry.ID)
+		filesDir := path.Join(cfg.FilesPath, entry.ID)
 		entries, err := os.ReadDir(filesDir)
 		if err != nil {
 			http.Error(w, "Failed to read files", http.StatusInternalServerError)
@@ -128,7 +133,7 @@ func GetDownloadInfo(repo *repository.Repository) http.HandlerFunc {
 	}
 }
 
-func GetFile(repo *repository.Repository) http.HandlerFunc {
+func GetFile(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idParam := chi.URLParam(r, "id")
 		filename := chi.URLParam(r, "file")
@@ -147,7 +152,7 @@ func GetFile(repo *repository.Repository) http.HandlerFunc {
 			http.Error(w, "Invalid filename", http.StatusBadRequest)
 			return
 		}
-		filePath := path.Join("./uploads", upload.ID, decoded)
+		filePath := path.Join(cfg.FilesPath, upload.ID, decoded)
 		log.Printf("Trying to serve file. %s", filePath)
 		repo.UpdateDownloads(r.Context(), idParam, 1)
 		http.ServeFile(w, r, filePath)

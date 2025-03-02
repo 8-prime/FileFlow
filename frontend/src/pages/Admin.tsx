@@ -65,15 +65,6 @@ const mockFiles = [
 
 export default function Admin() {
     const [files, setFiles] = useState(mockFiles)
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        })
-    }
-
     const copyLink = (id: string) => {
         const link = `${window.location.origin}/download/${id}`
         navigator.clipboard.writeText(link)

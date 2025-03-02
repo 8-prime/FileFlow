@@ -12,13 +12,16 @@ import (
 	"time"
 
 	"backend/internal/database"
+	"backend/internal/handler"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 )
 
 // Config holds application configuration
 type Config struct {
+	SERVER  handler.UploadConfig
 	DB      database.Config
 	Port    string
 	Timeout time.Duration
@@ -42,6 +45,12 @@ func NewApplication(cfg Config) (*Application, error) {
 	router := chi.NewRouter()
 
 	// Add middleware
+	router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedMethods:   []string{"*"}, // Allow all methods
+		AllowedHeaders:   []string{"*"}, // Allow all headers
+		AllowCredentials: true,
+	}))
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)

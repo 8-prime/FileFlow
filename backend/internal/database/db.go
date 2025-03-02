@@ -2,6 +2,9 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	_ "embed"
@@ -21,6 +24,11 @@ var migration string
 
 // InitDB initializes and configures the SQLite database
 func InitDB(cfg Config) (*sql.DB, error) {
+	dir := filepath.Dir(cfg.DBPath)
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create directories: %w", err)
+	}
 	db, err := sql.Open("sqlite3", cfg.DBPath)
 	if err != nil {
 		return nil, err

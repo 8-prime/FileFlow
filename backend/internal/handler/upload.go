@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -81,7 +82,7 @@ func HandleUpload(repo *repository.Repository) http.HandlerFunc {
 
 }
 
-func GetUpload(repo *repository.Repository) http.HandlerFunc {
+func GetDownloadInfo(repo *repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idParam := chi.URLParam(r, "id")
 		log.Printf("Got request with id: %s", idParam)
@@ -115,6 +116,7 @@ func GetUpload(repo *repository.Repository) http.HandlerFunc {
 		for _, e := range entries {
 			dlInfo.FILES = append(dlInfo.FILES, e.Name())
 		}
+		dlInfo.METADATA = entry
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -140,9 +142,14 @@ func GetFile(repo *repository.Repository) http.HandlerFunc {
 			http.Error(w, "Upload is expired", http.StatusBadRequest)
 			return
 		}
-
-		filePath := path.Join("./uploads", upload.ID, filename)
+		decoded, err := url.QueryUnescape(filename)
+		if err != nil {
+			http.Error(w, "Invalid filename", http.StatusBadRequest)
+			return
+		}
+		filePath := path.Join("./uploads", upload.ID, decoded)
 		log.Printf("Trying to serve file. %s", filePath)
+		repo.UpdateDownloads(r.Context(), idParam, 1)
 		http.ServeFile(w, r, filePath)
 	}
 }

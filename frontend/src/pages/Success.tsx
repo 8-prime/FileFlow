@@ -10,7 +10,7 @@ import { NavLink, useParams } from "react-router"
 export default function Success() {
     const [copied, setCopied] = useState(false)
     const params = useParams();
-    const fileId = params.id || "demo123"
+    const fileId = params.id
     const shareUrl = `${window.location.origin}/files/${fileId}`
 
     const copyToClipboard = () => {

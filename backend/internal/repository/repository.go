@@ -4,7 +4,6 @@ import (
 	"backend/internal/model"
 	"context"
 	"database/sql"
-	"log"
 	"math"
 	"strconv"
 	"time"
@@ -117,7 +116,6 @@ func (r *Repository) GetUpload(ctx context.Context, id string) (model.UploadInfo
     `, id).Scan(&info.ID, &info.MAX_DOWNLOADS, &info.CURRENT_DOWNLOADS, &info.UPLOADED, &info.EXPIRES, &info.STATUS)
 
 	if err != nil {
-		log.Fatal(err)
 		return info, err
 	}
 
@@ -127,7 +125,7 @@ func (r *Repository) GetUpload(ctx context.Context, id string) (model.UploadInfo
 func (r *Repository) UpdateDownloads(ctx context.Context, id string, downloads int64) error {
 	query := `
 	UPDATE UPLOADS
-	SET current_downloads = ?
+	SET current_downloads = current_downloads + ?
 	WHERE id = ?
 	`
 	_, err := r.db.Exec(query, downloads, id)

@@ -6,10 +6,8 @@ type Stats struct {
 	TOTAL_DOWNLOADS  int64 `json:"totalDownloads"`
 }
 
-// Status represents the state of an item in the system
 type Status string
 
-// Status enum values
 const (
 	StatusActive  Status = "active"
 	StatusExpired Status = "expired"
@@ -26,7 +24,8 @@ type UploadInfo struct {
 }
 
 type DownloadInfo struct {
-	FILES []string `json:"files"`
+	FILES    []string   `json:"files"`
+	METADATA UploadInfo `json:"metadata"`
 }
 
 type DownloadRequest struct {

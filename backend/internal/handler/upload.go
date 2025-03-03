@@ -4,9 +4,12 @@ import (
 	"backend/internal/model"
 	"backend/internal/repository"
 	"encoding/json"
+	"errors"
 	"io"
+	"io/fs"
 	"log"
 	"math"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,6 +18,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi"
 )
 
@@ -33,7 +37,7 @@ func HandleUpload(repo *repository.Repository, cfg *UploadConfig) http.HandlerFu
 		maxDownloads := r.MultipartForm.Value["maxDownloads"]
 		maxDownloadsParsed, err := strconv.ParseInt(maxDownloads[0], 0, 64)
 		if err != nil || maxDownloadsParsed < 1 {
-			http.Error(w, "Specify valid amound for max downloads", http.StatusBadRequest)
+			http.Error(w, "Specify valid amount for max downloads", http.StatusBadRequest)
 			return
 		}
 		expiration := r.MultipartForm.Value["expiration"]
@@ -48,34 +52,12 @@ func HandleUpload(repo *repository.Repository, cfg *UploadConfig) http.HandlerFu
 			http.Error(w, "Failed to save upload", http.StatusInternalServerError)
 			return
 		}
-		filesDir := path.Join(cfg.FilesPath, newEntry.ID)
-		os.MkdirAll(filesDir, os.ModePerm)
 
-		for _, fileHeader := range files {
-			// Open the uploaded file
-			file, err := fileHeader.Open()
-			if err != nil {
-				http.Error(w, "Unable to open file", http.StatusInternalServerError)
-				return
-			}
-			defer file.Close()
-
-			// Create a destination file
-			destPath := filepath.Join(filesDir, fileHeader.Filename)
-			destFile, err := os.Create(destPath)
-			if err != nil {
-				http.Error(w, "Unable to create file", http.StatusInternalServerError)
-				return
-			}
-			defer destFile.Close()
-
-			// Copy the uploaded file to the destination file
-			_, err = io.Copy(destFile, file)
-			if err != nil {
-				http.Error(w, "Unable to save file", http.StatusInternalServerError)
-				return
-			}
+		success := saveFilesFromForm(cfg, newEntry, files, w)
+		if !success {
+			return
 		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		enc := json.NewEncoder(w)
@@ -97,31 +79,15 @@ func GetDownloadInfo(repo *repository.Repository, cfg *UploadConfig) http.Handle
 			return
 		}
 
-		//validate is not expired
-		if entry.EXPIRES < time.Now().UTC().Unix() {
-			http.Error(w, "Upload is expired", http.StatusBadRequest)
-			repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
-			return
-		}
-		//validate downloads not exhausted
-		if entry.CURRENT_DOWNLOADS >= entry.MAX_DOWNLOADS {
-			http.Error(w, "All downloads are used up", http.StatusBadRequest)
-			repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
+		res, err := uploadIsValid(entry, &w, r, cfg, repo, idParam)
+		if !res || err != nil {
 			return
 		}
 
-		//read files from fs
-		filesDir := path.Join(cfg.FilesPath, entry.ID)
-		entries, err := os.ReadDir(filesDir)
-		if err != nil {
-			http.Error(w, "Failed to read files", http.StatusInternalServerError)
+		dlInfo, success := getInfoForUpload(cfg, entry, w)
+		if !success {
 			return
 		}
-		var dlInfo model.DownloadInfo
-		for _, e := range entries {
-			dlInfo.FILES = append(dlInfo.FILES, e.Name())
-		}
-		dlInfo.METADATA = entry
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -143,10 +109,12 @@ func GetFile(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 			http.Error(w, "Failed to get upload", http.StatusBadRequest)
 			return
 		}
-		if !checkUploadExpiry(upload, repo, r) {
-			http.Error(w, "Upload is expired", http.StatusBadRequest)
+
+		res, err := uploadIsValid(upload, &w, r, cfg, repo, idParam)
+		if !res || err != nil {
 			return
 		}
+
 		decoded, err := url.QueryUnescape(filename)
 		if err != nil {
 			http.Error(w, "Invalid filename", http.StatusBadRequest)
@@ -159,15 +127,139 @@ func GetFile(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 	}
 }
 
-func checkUploadExpiry(entry model.UploadInfo, repo *repository.Repository, r *http.Request) bool {
+func GetUploads(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		page, err := strconv.ParseInt(r.URL.Query().Get("page"), 0, 64)
+		if err != nil {
+			page = 0
+		}
+		// set fixed page size to 10 for now. cbf
+		uploads, err := repo.GetUploads(r.Context(), page)
+		if err != nil {
+			http.Error(w, "Failed to get uploads", http.StatusInternalServerError)
+		}
+		var infos []model.DownloadInfo
+		for _, e := range uploads {
+			info, success := getInfoForUpload(cfg, e, w)
+			if !success {
+				return
+			}
+			infos = append(infos, info)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		enc := json.NewEncoder(w)
+		if err := enc.Encode(infos); err != nil {
+			http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func uploadIsValid(entry model.UploadInfo, w *http.ResponseWriter, r *http.Request, cfg *UploadConfig, repo *repository.Repository, idParam string) (bool, error) {
+	if entry.STATUS != model.StatusActive {
+		http.Error(*w, "Upload is expired or deleted", http.StatusBadRequest)
+		return false, nil
+	}
+
+	fsPath := path.Join(cfg.FilesPath, entry.ID)
+	exists, err := exists(fsPath)
+	if !exists || err != nil {
+		http.Error(*w, "Files for upload don't exist", http.StatusInternalServerError)
+		repo.UpdateStatus(r.Context(), entry.ID, model.StatusDeleted)
+		return false, nil
+	}
+
+	//validate is not expired
 	if entry.EXPIRES < time.Now().UTC().Unix() {
-		repo.UpdateStatus(r.Context(), entry.ID, model.StatusExpired)
-		return false
+		http.Error(*w, "Upload is expired", http.StatusBadRequest)
+		repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
+		os.RemoveAll(fsPath)
+		return false, nil
 	}
 	//validate downloads not exhausted
 	if entry.CURRENT_DOWNLOADS >= entry.MAX_DOWNLOADS {
-		repo.UpdateStatus(r.Context(), entry.ID, model.StatusExpired)
-		return false
+		http.Error(*w, "All downloads are used up", http.StatusBadRequest)
+		repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
+		os.RemoveAll(fsPath)
+		return false, nil
+	}
+	return true, nil
+}
+
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
+}
+
+func saveFilesFromForm(cfg *UploadConfig, newEntry model.UploadInfo, files []*multipart.FileHeader, w http.ResponseWriter) bool {
+	filesDir := path.Join(cfg.FilesPath, newEntry.ID)
+	os.MkdirAll(filesDir, os.ModePerm)
+
+	for _, fileHeader := range files {
+
+		file, err := fileHeader.Open()
+		if err != nil {
+			http.Error(w, "Unable to open file", http.StatusInternalServerError)
+			return false
+		}
+		defer file.Close()
+
+		destPath := filepath.Join(filesDir, fileHeader.Filename)
+		destFile, err := os.Create(destPath)
+		if err != nil {
+			http.Error(w, "Unable to create file", http.StatusInternalServerError)
+			return false
+		}
+		defer destFile.Close()
+
+		_, err = io.Copy(destFile, file)
+		if err != nil {
+			http.Error(w, "Unable to save file", http.StatusInternalServerError)
+			return false
+		}
 	}
 	return true
+}
+
+func getInfoForUpload(cfg *UploadConfig, entry model.UploadInfo, w http.ResponseWriter) (model.DownloadInfo, bool) {
+	filesDir := path.Join(cfg.FilesPath, entry.ID)
+	entries, err := os.ReadDir(filesDir)
+	if err != nil {
+		http.Error(w, "Failed to read files", http.StatusInternalServerError)
+		return model.DownloadInfo{}, false
+	}
+	var dlInfo model.DownloadInfo
+	for _, e := range entries {
+		fileInfo, err := createFileInfo(e)
+		if err != nil {
+			http.Error(w, "Failed to read files", http.StatusInternalServerError)
+			return model.DownloadInfo{}, false
+		}
+		dlInfo.FILES = append(dlInfo.FILES, fileInfo)
+	}
+	dlInfo.METADATA = entry
+	return dlInfo, true
+}
+
+func createFileInfo(e fs.DirEntry) (model.FileInfo, error) {
+	var info model.FileInfo
+
+	fileInfo, err := e.Info()
+	if err != nil {
+		return info, err
+	}
+	humanSize := humanize.Bytes(uint64(fileInfo.Size()))
+
+	info.FILENAME = e.Name()
+	info.SIZE = humanSize
+
+	return info, nil
 }

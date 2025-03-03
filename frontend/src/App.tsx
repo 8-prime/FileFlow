@@ -8,7 +8,7 @@ import Success from "./pages/Success";
 
 const App = (): JSX.Element => {
     return (
-        <div className="w-screen min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50">
+        <div className="w-full min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50">
 
             <BrowserRouter>
                 <Routes>
@@ -22,7 +22,7 @@ const App = (): JSX.Element => {
             <footer className="border-t py-6 md:py-0">
                 <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
                     <p className="text-center text-sm leading-loose text-muted-foreground md:text-left px-4">
-                        © {new Date().getFullYear()} FileShare. All rights reserved.
+                        © {new Date().getFullYear()} FileFlow. All rights reserved.
                     </p>
                 </div>
             </footer>

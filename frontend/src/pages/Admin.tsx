@@ -61,6 +61,46 @@ const mockFiles = [
         maxDownloads: 1,
         status: "expired",
     },
+    {
+        id: "file6",
+        name: "archive.zip",
+        size: "15.7 MB",
+        uploadedAt: "2023-06-08T11:10:00Z",
+        expiresAt: "2023-06-15T11:10:00Z",
+        downloads: 1,
+        maxDownloads: 1,
+        status: "expired",
+    },
+    {
+        id: "file7",
+        name: "archive.zip",
+        size: "15.7 MB",
+        uploadedAt: "2023-06-08T11:10:00Z",
+        expiresAt: "2023-06-15T11:10:00Z",
+        downloads: 1,
+        maxDownloads: 1,
+        status: "expired",
+    },
+    {
+        id: "file8",
+        name: "archive.zip",
+        size: "15.7 MB",
+        uploadedAt: "2023-06-08T11:10:00Z",
+        expiresAt: "2023-06-15T11:10:00Z",
+        downloads: 1,
+        maxDownloads: 1,
+        status: "expired",
+    },
+    {
+        id: "file9",
+        name: "archive.zip",
+        size: "15.7 MB",
+        uploadedAt: "2023-06-08T11:10:00Z",
+        expiresAt: "2023-06-15T11:10:00Z",
+        downloads: 1,
+        maxDownloads: 1,
+        status: "expired",
+    },
 ]
 
 export default function Admin() {
@@ -97,9 +137,9 @@ export default function Admin() {
                     </nav>
                 </div>
             </header>
-            <main className="w-full flex flex-col justify-center items-center">
+            <main className="w-full flex flex-col justify-center items-center px-4">
                 <div className="container py-6 md:py-10">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
                         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
                         <Button asChild>
                             <NavLink to="/">Upload New Files</NavLink>

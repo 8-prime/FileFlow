@@ -23,8 +23,13 @@ type UploadInfo struct {
 	STATUS            Status `json:"status"`
 }
 
+type FileInfo struct {
+	FILENAME string `json:"filename"`
+	SIZE     string `json:"size"`
+}
+
 type DownloadInfo struct {
-	FILES    []string   `json:"files"`
+	FILES    []FileInfo `json:"files"`
 	METADATA UploadInfo `json:"metadata"`
 }
 

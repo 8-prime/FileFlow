@@ -53,8 +53,8 @@ const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, se
             <div className="space-y-2">
                 <h3 className="text-sm font-medium">Files to upload ({files.length})</h3>
                 <ul className="max-h-32 overflow-y-auto space-y-2">
-                    {files.map((file, index) => (
-                        <li key={index} className="text-sm truncate">
+                    {files.map((file) => (
+                        <li key={file.name} className="text-sm truncate">
                             {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                         </li>
                     ))}

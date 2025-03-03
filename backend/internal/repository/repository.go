@@ -2,10 +2,9 @@ package repository
 
 import (
 	"backend/internal/model"
+	"backend/internal/utils"
 	"context"
 	"database/sql"
-	"math"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,18 +41,15 @@ func (r *Repository) GetStats(ctx context.Context) (model.Stats, error) {
 
 func (r *Repository) SaveEntry(ctx context.Context, maxDownloads int64, expiration string) (model.UploadInfo, error) {
 	var upload model.UploadInfo
+
 	upload.ID = uuid.NewString()
 	upload.CURRENT_DOWNLOADS = 0
 	upload.MAX_DOWNLOADS = maxDownloads
-	if expiration == "never" {
-		upload.EXPIRES = math.MaxInt64
-	} else {
-		i, err := strconv.ParseInt(expiration[:len(expiration)-1], 0, 64)
-		if err != nil {
-			return upload, err
-		}
-		upload.EXPIRES = time.Now().UTC().AddDate(0, 0, int(i)).Unix()
+	parsedExpiration, err := utils.ParseDurationToTime(expiration)
+	if err != nil {
+		return upload, err
 	}
+	upload.EXPIRES = parsedExpiration
 	upload.STATUS = model.StatusActive
 	upload.UPLOADED = time.Now().UTC().Unix()
 
@@ -67,7 +63,7 @@ func (r *Repository) SaveEntry(ctx context.Context, maxDownloads int64, expirati
         upload_status
     ) VALUES (?, ?, ?, ?, ?, ?)
     `
-	_, err := r.db.Exec(
+	_, err = r.db.Exec(
 		query,
 		upload.ID,
 		upload.MAX_DOWNLOADS,
@@ -120,6 +116,37 @@ func (r *Repository) GetUpload(ctx context.Context, id string) (model.UploadInfo
 	}
 
 	return info, nil
+}
+
+func (r *Repository) GetUploads(ctx context.Context, page int64) ([]model.UploadInfo, error) {
+	var infos []model.UploadInfo
+
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT
+			id,
+			max_downloads,
+			current_downloads,
+			uploaded,
+			expiration,
+			upload_status
+		FROM
+			UPLOADS
+		ORDER BY
+			uploaded
+		LIMIT 10
+		OFFSET (page_number) * 10;
+	`, page)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var info model.UploadInfo
+		rows.Scan(&info.ID, &info.MAX_DOWNLOADS, &info.CURRENT_DOWNLOADS, &info.UPLOADED, &info.EXPIRES, &info.STATUS)
+		infos = append(infos, info)
+	}
+
+	return infos, nil
 }
 
 func (r *Repository) UpdateDownloads(ctx context.Context, id string, downloads int64) error {

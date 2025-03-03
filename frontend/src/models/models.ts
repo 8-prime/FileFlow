@@ -7,17 +7,18 @@ export type UploadInfo = {
     status: string
 }
 
+export type FileInfo = {
+    filename: string,
+    size: string
+}
+
 export type DownloadInfo = {
-    files: string[],
+    files: FileInfo[],
     metadata: UploadInfo
 }
 
-export type DownloadRequest = {
-
-}
-
 export type Stats = {
-    totalUplaods: number,
+    totalUploads: number,
     activeDownloads: number,
     totalDownloads: number
 }

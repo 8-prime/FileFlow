@@ -230,6 +230,12 @@ func saveFilesFromForm(cfg *UploadConfig, newEntry model.UploadInfo, files []*mu
 }
 
 func getInfoForUpload(cfg *UploadConfig, entry model.UploadInfo, w http.ResponseWriter) (model.DownloadInfo, bool) {
+	if entry.STATUS != model.StatusActive {
+		var emptyInfo model.DownloadInfo
+		emptyInfo.METADATA = entry
+		return emptyInfo, true
+	}
+
 	filesDir := path.Join(cfg.FilesPath, entry.ID)
 	entries, err := os.ReadDir(filesDir)
 	if err != nil {

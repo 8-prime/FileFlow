@@ -1,5 +1,6 @@
 import { DownloadInfo, Stats, UploadInfo } from "@/models/models"
-import useSWR from 'swr'
+import useSWR, { KeyedMutator, mutate } from 'swr'
+import axios, { AxiosResponse } from "axios";
 
 
 const statsFetcher = async () => {
@@ -10,19 +11,18 @@ const statsFetcher = async () => {
     return await result.json() as Stats
 }
 
-export const useStats = () => {
-    const { data, error, isLoading } = useSWR(statsFetcher)
+export const useStats = (): { stats: Stats, isLoading: boolean, isError: boolean, mutate: KeyedMutator<any> } => {
+    const { data, error, isLoading, mutate } = useSWR(statsFetcher)
     return {
         stats: data,
         isLoading,
-        isError: error
+        isError: error,
+        mutate
     }
 }
 
 export const downloadInfoFetcher = async (id: string) => {
-    console.log("calling backend")
     const result = await fetch(`/api/upload/${id}`)
-    console.log("got result from backend")
     if (!result.ok) {
         throw new Error(result.statusText)
     }
@@ -45,72 +45,63 @@ export const useDownloadInfo = (id: string | undefined) => {
     }
 }
 
-export type UploadCallbacks = {
-    onProgress: (progress: number) => void;
-    onSuccess: (response: UploadInfo) => void;
-    onError: (error: string) => void;
-    onAbort?: (message: string) => void; // Optional abort callback
+export const downloadInfosFetcher = async (page: number) => {
+    const result = await fetch(`/api/uploads/?page=${page}`)
+    if (!result.ok) {
+        throw new Error(result.statusText)
+    }
+    return await result.json() as DownloadInfo[]
 }
 
-export const uploadFilesWithCallbacks = async (
+export const useDownloadInfos = (page: number | undefined) => {
+    const { data, error, isLoading, mutate } = useSWR(page?.toString(), () => downloadInfosFetcher(page ?? 0))
+    return {
+        downloadInfos: data,
+        isLoading,
+        isError: error,
+        mutate
+    }
+}
+
+export async function softDelete(id: string): Promise<boolean> {
+    const response = await fetch(`/api/upload/${id}`, { method: 'DELETE' })
+    return response.ok
+}
+
+export async function uploadFiles(
     files: File[],
     expiration: string,
     maxDownloads: number,
-    callbacks: UploadCallbacks
-): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        if (!files || files.length === 0) {
-            callbacks.onError("No files selected.");
-            reject("No files selected");
-            return;
-        }
+    progressCallback: (progress: number) => void,
+): Promise<UploadInfo> {
+    const formData = new FormData();
 
-        const formData = new FormData();
-        for (let i = 0; i < files.length; i++) {
-            formData.append("files", files[i]);
-        }
-
-        formData.append("expiration", expiration)
-        formData.append("maxDownloads", maxDownloads.toString())
-
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener("progress", (event) => {
-            if (event.lengthComputable) {
-                const progress = Math.round((event.loaded / event.total) * 100);
-                callbacks.onProgress(progress);
-            }
-        });
-
-        xhr.addEventListener("load", () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const parsedResponse: UploadInfo = JSON.parse(xhr.responseText);
-                    callbacks.onSuccess(parsedResponse);
-                    resolve(parsedResponse);
-                } catch (error: any) {
-                    // Handle JSON parsing errors
-                    callbacks.onError(`Error parsing JSON response: ${error.message}`);
-                    reject(`Error parsing JSON response: ${error.message}`);
-                }
-            } else {
-                callbacks.onError(`Upload failed with status: ${xhr.status}`);
-                reject(`Upload failed with status: ${xhr.status}`);
-            }
-        });
-
-        xhr.addEventListener("error", () => {
-            callbacks.onError("Network error during upload.");
-            reject("Network error during upload.");
-        });
-
-        xhr.addEventListener("abort", () => {
-            callbacks.onAbort?.("Upload aborted."); // Use optional chaining
-            reject("Upload aborted.");
-        });
-
-        xhr.open("POST", "/api/upload");
-        xhr.send(formData);
+    files.forEach((file) => {
+        formData.append("files", file);
     });
-}
 
+    formData.append("expiration", expiration);
+    formData.append("maxDownloads", String(maxDownloads));
+
+    try {
+        const response: AxiosResponse<UploadInfo> = await axios.post(
+            "/api/upload",
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                onUploadProgress: (progressEvent) => {
+                    const progress = Math.round(
+                        (progressEvent.loaded * 100) / (progressEvent.total ?? Number.MAX_VALUE),
+                    );
+                    progressCallback(progress);
+                },
+            },
+        );
+
+        return response.data;
+    } catch (error: any) {
+        throw new Error(`File upload failed: ${error.message}`);
+    }
+}

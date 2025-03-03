@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { NavLink } from "react-router"
+import { useStats } from "@/api/api"
 
 // Mock data for demonstration
 const mockFiles = [
@@ -104,6 +105,8 @@ const mockFiles = [
 ]
 
 export default function Admin() {
+    const { stats } = useStats()
+
     const [files, setFiles] = useState(mockFiles)
     const copyLink = (id: string) => {
         const link = `${window.location.origin}/download/${id}`
@@ -178,7 +181,7 @@ export default function Admin() {
                                 <CardDescription>All time file uploads</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-4xl font-bold">{files.length}</div>
+                                <div className="text-4xl font-bold">{stats?.totalUploads}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -187,7 +190,7 @@ export default function Admin() {
                                 <CardDescription>Files available for download</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-4xl font-bold">{files.filter((file) => file.status === "active").length}</div>
+                                <div className="text-4xl font-bold">{stats?.activeDownloads}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -196,7 +199,7 @@ export default function Admin() {
                                 <CardDescription>All time file downloads</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-4xl font-bold">{files.reduce((total, file) => total + file.downloads, 0)}</div>
+                                <div className="text-4xl font-bold">{stats?.totalDownloads}</div>
                             </CardContent>
                         </Card>
                     </div>

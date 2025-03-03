@@ -8,9 +8,7 @@ import { useNavigate } from "react-router"
 import FileUploadStep from "./FileUploadStep"
 import FileConfigurationStep from "./FileConfigurationStep"
 import { Progress } from "./ui/progress"
-import { UploadInfo } from "@/models/models"
-import { toast } from "sonner"
-import { uploadFilesWithCallbacks } from "@/api/api"
+import { uploadFiles } from "@/api/api"
 
 export function FileUpload() {
     const [uploading, setUploading] = useState<boolean>(false)
@@ -63,30 +61,15 @@ export function FileUpload() {
         }
     }
 
-    const onUploadComplete = (uploadInfo: UploadInfo) => {
-        setUploading(false)
-        navigate(`/success/${uploadInfo.id}`)
-    }
-
-    const onErrorOrAbort = (message: string) => {
-        setUploading(false)
-        toast("Uploading fialed", {
-            description: message,
-        })
-    }
-
     const onProgress = (progress: number) => {
         setProgress(progress)
-
     }
 
-    const handleUpload = () => {
-        uploadFilesWithCallbacks(files, expiration, downloadLimit, {
-            onError: onErrorOrAbort,
-            onProgress: onProgress,
-            onSuccess: onUploadComplete,
-            onAbort: onErrorOrAbort
-        })
+    const handleUpload = async () => {
+        setUploading(true)
+        const response = await uploadFiles(files, expiration, downloadLimit, onProgress)
+        setUploading(false)
+        navigate(`/success/${response.id}`)
     }
     return (
         <Card className="w-full">

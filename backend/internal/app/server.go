@@ -21,6 +21,11 @@ func (app *Application) RegisterRoutes() {
 			r.Post("/", handler.HandleUpload(repo, &app.Config.SERVER))
 			r.Get("/{id}", handler.GetDownloadInfo(repo, &app.Config.SERVER))
 			r.Get("/{id}/{file}", handler.GetFile(repo, &app.Config.SERVER))
+			r.Delete("/{id}", handler.SoftDeleteEntry(repo, &app.Config.SERVER))
+		})
+
+		r.Route("/uploads", func(r chi.Router) {
+			r.Get("/", handler.GetUploads(repo, &app.Config.SERVER))
 		})
 
 	})

@@ -52,12 +52,13 @@ const FileView = (): JSX.Element => {
                         </div>
                     }
                     {downloadInfo?.files.map(f =>
-                        <div key={f} className="rounded-md bg-muted p-4">
+                        <div key={f.filename} className="rounded-md bg-muted p-4">
                             <div className="flex items-center space-x-4">
                                 <div className="grow">
-                                    <p className="font-medium">{f}</p>
+                                    <p className="font-medium">{f.filename}</p>
+                                    <p className="text-sm text-muted-foreground">{f.size}</p>
                                 </div>
-                                <a href={getUrlEncodedHref(f)} download className="rounded-full bg-primary/10 p-2">
+                                <a href={getUrlEncodedHref(f.filename)} download className="rounded-full bg-primary/10 p-2">
                                     <Download className="h-6 w-6 text-primary" />
                                 </a>
                             </div>

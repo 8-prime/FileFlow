@@ -134,7 +134,7 @@ func (r *Repository) GetUploads(ctx context.Context, page int64) ([]model.Upload
 		ORDER BY
 			uploaded
 		LIMIT 10
-		OFFSET (page_number) * 10;
+		OFFSET (?) * 10;
 	`, page)
 	if err != nil {
 		return nil, err

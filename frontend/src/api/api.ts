@@ -1,5 +1,5 @@
-import { DownloadInfo, Stats, UploadInfo } from "@/models/models"
-import useSWR, { KeyedMutator, mutate } from 'swr'
+import { DownloadInfo, Stats, UploadInfo } from "@/models/models";
+import useSWR, { KeyedMutator } from 'swr';
 import axios, { AxiosResponse } from "axios";
 
 

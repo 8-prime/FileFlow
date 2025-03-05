@@ -8,15 +8,23 @@ const statsFetcher = async () => {
     if (!result.ok) {
         throw new Error(result.statusText)
     }
-    return await result.json() as Stats
+    const fetchedResult = await result.json() as Stats
+    return fetchedResult
 }
 
-export const useStats = (): { stats: Stats, isLoading: boolean, isError: boolean, mutate: KeyedMutator<any> } => {
-    const { data, error, isLoading, mutate } = useSWR(statsFetcher)
+export type useStatsData = {
+    stats: Stats | undefined,
+    isLoading: boolean,
+    error: Error,
+    mutate: KeyedMutator<any>
+}
+
+export const useStats = (): useStatsData => {
+    const { data, error, isLoading, mutate } = useSWR("/api/stats", statsFetcher)
     return {
         stats: data,
         isLoading,
-        isError: error,
+        error,
         mutate
     }
 }
@@ -24,24 +32,31 @@ export const useStats = (): { stats: Stats, isLoading: boolean, isError: boolean
 export const downloadInfoFetcher = async (id: string) => {
     const result = await fetch(`/api/upload/${id}`)
     if (!result.ok) {
-        throw new Error(result.statusText)
+        const errorText = await result.text();
+        throw new Error(errorText)
     }
     return await result.json() as DownloadInfo
 }
 
-export const useDownloadInfo = (id: string | undefined) => {
+export type useDownloadInfoData = {
+    downloadInfo: DownloadInfo | undefined,
+    isLoading: boolean,
+    error: Error | undefined
+}
+
+export const useDownloadInfo = (id: string | undefined): useDownloadInfoData => {
     if (!id) {
         return {
             downloadInfo: undefined,
             isLoading: false,
-            isError: true
+            error: undefined
         }
     }
     const { data, error, isLoading } = useSWR(id, downloadInfoFetcher)
     return {
         downloadInfo: data,
         isLoading,
-        isError: error
+        error
     }
 }
 
@@ -53,12 +68,19 @@ export const downloadInfosFetcher = async (page: number) => {
     return await result.json() as DownloadInfo[]
 }
 
-export const useDownloadInfos = (page: number | undefined) => {
+export type useDownloadInfosData = {
+    downloadInfos: DownloadInfo[],
+    isLoading: boolean,
+    error: Error,
+    mutate: KeyedMutator<any>
+}
+
+export const useDownloadInfos = (page: number | undefined): useDownloadInfosData => {
     const { data, error, isLoading, mutate } = useSWR(page?.toString(), () => downloadInfosFetcher(page ?? 0))
     return {
-        downloadInfos: data,
+        downloadInfos: data ?? [],
         isLoading,
-        isError: error,
+        error,
         mutate
     }
 }

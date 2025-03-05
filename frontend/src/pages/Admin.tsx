@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Copy, MoreHorizontal, Trash } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { NavLink } from "react-router"
 import { useStats } from "@/api/api"
+import { Header } from "@/components/Header"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // Mock data for demonstration
 const mockFiles = [
@@ -105,7 +107,13 @@ const mockFiles = [
 ]
 
 export default function Admin() {
-    const { stats } = useStats()
+    const stats = useStats()
+
+    useEffect(() => {
+        console.log(stats);
+
+    }, [stats])
+
 
     const [files, setFiles] = useState(mockFiles)
     const copyLink = (id: string) => {
@@ -125,21 +133,7 @@ export default function Admin() {
 
     return (
         <div className="grow flex flex-col">
-            <header className="border-b">
-                <div className="w-full flex h-16 items-center px-4 sm:px-6 lg:px-8">
-                    <NavLink to="/" className="font-bold text-4xl">
-                        FileFlow
-                    </NavLink>
-                    <nav className="ml-auto flex gap-4 sm:gap-6">
-                        <NavLink to="/" className="text-sm font-medium">
-                            Upload
-                        </NavLink>
-                        <NavLink to="/admin" className="text-sm font-medium text-primary">
-                            Admin
-                        </NavLink>
-                    </nav>
-                </div>
-            </header>
+            <Header />
             <main className="w-full flex flex-col justify-center items-center px-4">
                 <div className="container py-6 md:py-10">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
@@ -180,27 +174,42 @@ export default function Admin() {
                                 <CardTitle>Total Uploads</CardTitle>
                                 <CardDescription>All time file uploads</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-4xl font-bold">{stats?.totalUploads}</div>
-                            </CardContent>
+                            {stats.isLoading &&
+                                <Skeleton className="w-full" />
+                            }
+                            {!stats.isLoading &&
+                                <CardContent>
+                                    <div className="text-4xl font-bold">{stats?.stats?.totalUploads}</div>
+                                </CardContent>
+                            }
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle>Active Files</CardTitle>
                                 <CardDescription>Files available for download</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-4xl font-bold">{stats?.activeDownloads}</div>
-                            </CardContent>
+                            {stats.isLoading &&
+                                <Skeleton className="w-full" />
+                            }
+                            {!stats.isLoading &&
+                                <CardContent>
+                                    <div className="text-4xl font-bold">{stats?.stats?.activeDownloads}</div>
+                                </CardContent>
+                            }
                         </Card>
                         <Card>
                             <CardHeader className="pb-2">
                                 <CardTitle>Total Downloads</CardTitle>
                                 <CardDescription>All time file downloads</CardDescription>
                             </CardHeader>
-                            <CardContent>
-                                <div className="text-4xl font-bold">{stats?.totalDownloads}</div>
-                            </CardContent>
+                            {stats.isLoading &&
+                                <Skeleton className="w-full" />
+                            }
+                            {!stats.isLoading &&
+                                <CardContent>
+                                    <div className="text-4xl font-bold">{stats?.stats?.totalDownloads}</div>
+                                </CardContent>
+                            }
                         </Card>
                     </div>
                 </div>

@@ -20,6 +20,7 @@ const FileUploadStep = ({ handleDragOver, handleDragLeave, handleDrop, handleFil
     return (
         <>
             <div
+                role="none"
                 className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-12 transition-colors ${isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
                     }`}
                 onDragOver={handleDragOver}
@@ -44,7 +45,7 @@ const FileUploadStep = ({ handleDragOver, handleDragLeave, handleDrop, handleFil
                     <h3 className="text-sm font-medium mb-2">Selected Files ({files.length})</h3>
                     <ul className="space-y-2">
                         {files.map((file, index) => (
-                            <li key={index} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                            <li key={file.name} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
                                 <div className="flex items-center">
                                     <span className="truncate max-w-[200px]">{file.name}</span>
                                     <span className="ml-2 text-xs text-muted-foreground">

@@ -130,11 +130,11 @@ function UploadTable({
     uploads,
     onCopyLink,
     onDeleteUpload,
-}: {
+}: Readonly<{
     uploads: DownloadInfo[]
     onCopyLink: (id: string) => void
     onDeleteUpload: (id: string) => void
-}) {
+}>) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
 
     const formatDate = (dateString: number) => {
@@ -143,6 +143,13 @@ function UploadTable({
             month: "short",
             day: "numeric",
         })
+    }
+
+    const humanizeBytes = (bytes: number, decimals: number = 2) => {
+        const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+        const base = Math.floor(Math.log(bytes) / Math.log(1024));
+        return (bytes / Math.pow(1024, base)).toFixed(decimals) + " " + units[base];
     }
 
     const toggleRow = (id: string) => {
@@ -212,7 +219,7 @@ function UploadTable({
                                     <TableCell className="hidden md:table-cell">{formatDate(upload.metadata.uploaded)}</TableCell>
                                     <TableCell className="hidden md:table-cell">{formatDate(upload.metadata.expires)}</TableCell>
                                     <TableCell>
-                                        {upload.metadata.currentDownloads}/{upload.metadata.maxDownloads === 0 ? "∞" : upload.metadata.maxDownloads}
+                                        {upload.metadata.currentDownloads}/{upload.metadata.maxDownloads === -1 ? "∞" : upload.metadata.maxDownloads}
                                     </TableCell>
                                     <TableCell>
                                         <div

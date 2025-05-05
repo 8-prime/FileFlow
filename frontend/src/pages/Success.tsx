@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { NavLink, useParams } from "react-router"
 import { Header } from "@/components/Header"
+import { safeCopyToClipboard } from "@/lib/utils"
 
 export default function Success() {
     const [copied, setCopied] = useState(false)
@@ -14,7 +15,7 @@ export default function Success() {
     const shareUrl = `${window.location.origin}/files/${uploadId}`
 
     const copyToClipboard = () => {
-        navigator.clipboard.writeText(shareUrl)
+        safeCopyToClipboard(shareUrl)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
     }

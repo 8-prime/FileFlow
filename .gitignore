@@ -43,6 +43,6 @@ go.work.sum
 # env file
 .env
 
-
+**/fileflow
 *data.db*
 uploads

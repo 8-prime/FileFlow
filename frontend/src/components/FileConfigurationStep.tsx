@@ -10,6 +10,8 @@ export type FileConfigurationStepProps = {
     files: File[]
 }
 
+const maxDownloadLimit = 11
+
 const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, setExpiration, files }: FileConfigurationStepProps) => {
     return (
         <div className="space-y-6">
@@ -19,7 +21,7 @@ const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, se
                     <Slider
                         id="download-limit"
                         min={1}
-                        max={10}
+                        max={maxDownloadLimit}
                         step={1}
                         value={[downloadLimit]}
                         onValueChange={(value) => setDownloadLimit(value[0])}
@@ -28,7 +30,7 @@ const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, se
                     <span className="w-12 text-center font-medium">{downloadLimit === 10 ? "∞" : downloadLimit}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    {downloadLimit === 10
+                    {downloadLimit === maxDownloadLimit
                         ? "Unlimited downloads"
                         : `File will be deleted after ${downloadLimit} download${downloadLimit !== 1 ? "s" : ""}`}
                 </p>

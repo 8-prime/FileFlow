@@ -172,7 +172,7 @@ func uploadIsValid(entry model.UploadInfo, w *http.ResponseWriter, r *http.Reque
 	}
 
 	//validate is not expired
-	if entry.EXPIRES < time.Now().UTC().Unix() {
+	if entry.EXPIRES == -1 || entry.EXPIRES < time.Now().UTC().Unix() {
 		http.Error(*w, "Upload is expired", http.StatusBadRequest)
 		repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
 		os.RemoveAll(fsPath)

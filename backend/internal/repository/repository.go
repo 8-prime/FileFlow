@@ -27,10 +27,10 @@ func (r *Repository) GetStats(ctx context.Context) (model.Stats, error) {
 	err := r.db.QueryRowContext(ctx, `
         SELECT 
             COUNT(*) as total_uploads,
-            SUM(CASE WHEN expiration > ? THEN 1 ELSE 0 END) as active_downloads,
+            SUM(CASE WHEN upload_status = ? THEN 1 ELSE 0 END) as active_downloads,
             SUM(current_downloads) as total_downloads
         FROM UPLOADS
-    `, time.Now().UTC().Unix()).Scan(&stats.TOTAL_UPLOADS, &stats.ACTIVE_DOWNLOADS, &stats.TOTAL_DOWNLOADS)
+    `, model.StatusActive).Scan(&stats.TOTAL_UPLOADS, &stats.ACTIVE_DOWNLOADS, &stats.TOTAL_DOWNLOADS)
 
 	if err != nil {
 		return stats, err
@@ -152,10 +152,14 @@ func (r *Repository) GetUploads(ctx context.Context, page int64) ([]model.Upload
 func (r *Repository) UpdateDownloads(ctx context.Context, id string, downloads int64) error {
 	query := `
 	UPDATE UPLOADS
-	SET current_downloads = current_downloads + ?
+	SET 
+		current_downloads = current_downloads + ?,
+		upload_status = CASE
+			WHEN current_downloads + ? >= max_downloads THEN ?
+			ELSE upload_status
+    	END
 	WHERE id = ?
 	`
-	_, err := r.db.Exec(query, downloads, id)
-
+	_, err := r.db.Exec(query, downloads, downloads, model.StatusExpired, id)
 	return err
 }

@@ -138,6 +138,9 @@ function UploadTable({
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
 
     const formatDate = (dateString: number) => {
+        if (dateString === -1) {
+            return "Never"
+        }
         return new Date(dateString * 1000).toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",
@@ -254,12 +257,12 @@ function UploadTable({
                                     </TableCell>
                                 </TableRow>
                                 {expandedRows[upload.metadata.id] && (
-                                    <TableRow className="bg-muted/50">
+                                    <TableRow key={`${upload.metadata.id}-files`} className="bg-muted/50">
                                         <TableCell colSpan={9} className="p-0">
                                             <div className="px-4 py-2">
                                                 <h4 className="font-medium mb-2">Files in this upload:</h4>
                                                 <div className="grid gap-2">
-                                                    {upload.files.map((file) => (
+                                                    {upload.files?.map((file) => (
                                                         <div
                                                             key={file.filename}
                                                             className="flex items-center justify-between py-1 px-2 rounded-md bg-background"

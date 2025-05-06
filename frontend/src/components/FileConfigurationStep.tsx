@@ -1,3 +1,4 @@
+import { maxFileDownloadLimit } from "./FileUpload"
 import { Label } from "./ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Slider } from "./ui/slider"
@@ -10,8 +11,6 @@ export type FileConfigurationStepProps = {
     files: File[]
 }
 
-const maxDownloadLimit = 11
-
 const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, setExpiration, files }: FileConfigurationStepProps) => {
     return (
         <div className="space-y-6">
@@ -21,16 +20,16 @@ const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, se
                     <Slider
                         id="download-limit"
                         min={1}
-                        max={maxDownloadLimit}
+                        max={maxFileDownloadLimit}
                         step={1}
                         value={[downloadLimit]}
                         onValueChange={(value) => setDownloadLimit(value[0])}
                         className="flex-1"
                     />
-                    <span className="w-12 text-center font-medium">{downloadLimit === 10 ? "∞" : downloadLimit}</span>
+                    <span className="w-12 text-center font-medium">{downloadLimit === maxFileDownloadLimit ? "∞" : downloadLimit}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    {downloadLimit === maxDownloadLimit
+                    {downloadLimit === maxFileDownloadLimit
                         ? "Unlimited downloads"
                         : `File will be deleted after ${downloadLimit} download${downloadLimit !== 1 ? "s" : ""}`}
                 </p>

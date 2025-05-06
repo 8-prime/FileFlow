@@ -36,7 +36,7 @@ func HandleUpload(repo *repository.Repository, cfg *UploadConfig) http.HandlerFu
 		}
 		maxDownloads := r.MultipartForm.Value["maxDownloads"]
 		maxDownloadsParsed, err := strconv.ParseInt(maxDownloads[0], 0, 64)
-		if err != nil || maxDownloadsParsed < 1 {
+		if err != nil || maxDownloadsParsed < -1 {
 			http.Error(w, "Specify valid amount for max downloads", http.StatusBadRequest)
 			return
 		}
@@ -172,14 +172,14 @@ func uploadIsValid(entry model.UploadInfo, w *http.ResponseWriter, r *http.Reque
 	}
 
 	//validate is not expired
-	if entry.EXPIRES < time.Now().UTC().Unix() {
+	if entry.EXPIRES == -1 || entry.EXPIRES < time.Now().UTC().Unix() {
 		http.Error(*w, "Upload is expired", http.StatusBadRequest)
 		repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
 		os.RemoveAll(fsPath)
 		return false, nil
 	}
 	//validate downloads not exhausted
-	if entry.CURRENT_DOWNLOADS >= entry.MAX_DOWNLOADS {
+	if entry.MAX_DOWNLOADS != -1 && entry.CURRENT_DOWNLOADS >= entry.MAX_DOWNLOADS {
 		http.Error(*w, "All downloads are used up", http.StatusBadRequest)
 		repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
 		os.RemoveAll(fsPath)

@@ -10,6 +10,8 @@ import FileConfigurationStep from "./FileConfigurationStep"
 import { Progress } from "./ui/progress"
 import { uploadFiles } from "@/api/api"
 
+export const maxFileDownloadLimit = 11
+
 export function FileUpload() {
     const [uploading, setUploading] = useState<boolean>(false)
     const [progress, setProgress] = useState<number>(0)
@@ -42,7 +44,6 @@ export function FileUpload() {
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("changed")
         if (e.target.files && e.target.files.length > 0) {
             const newFiles = Array.from(e.target.files)
             setFiles([...files, ...newFiles])
@@ -67,7 +68,7 @@ export function FileUpload() {
 
     const handleUpload = async () => {
         setUploading(true)
-        const response = await uploadFiles(files, expiration, downloadLimit, onProgress)
+        const response = await uploadFiles(files, expiration, downloadLimit === maxFileDownloadLimit ? -1 : downloadLimit, onProgress)
         setUploading(false)
         navigate(`/success/${response.id}`)
     }

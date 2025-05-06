@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -12,7 +11,7 @@ func ParseDurationToTime(durationStr string) (int64, error) {
 	durationStr = strings.ToLower(durationStr)
 
 	if durationStr == "never" {
-		return math.MaxInt64, nil // Return zero time for "never"
+		return -1, nil // Return zero time for "never"
 	}
 
 	if strings.HasSuffix(durationStr, "h") {

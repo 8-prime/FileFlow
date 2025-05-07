@@ -26,6 +26,10 @@ const FileView = (): JSX.Element => {
         return `/api/upload/${uploadId}/${encodeURIComponent(file)}`
     }
 
+    const getArchiveDownloadUrl = () => {
+        return `/api/upload/${uploadId}/archive`
+    }
+
     return (
         <div className="grow w-full flex flex-col">
             <Header />
@@ -56,7 +60,7 @@ const FileView = (): JSX.Element => {
                         {!!error &&
                             <div className="flex gap-4">
                                 <ClockAlert />
-                                {(error as Error).message}
+                                {error.message}
                             </div>
                         }
                         {downloadInfo?.files.map(f =>
@@ -79,10 +83,12 @@ const FileView = (): JSX.Element => {
                         }
                     </CardContent>
                     <CardFooter>
-                        <Button disabled={isLoading || !!error} className="w-full" size="lg">
-                            <Download className="mr-2 h-4 w-4" />
-                            Download all files as archive
-                        </Button>
+                        {!isLoading && !error &&
+                            <a href={getArchiveDownloadUrl()} download className="flex items-center justify-center w-full bg-neutral-100 text-neutral-950 py-2 px-4 rounded-md hover:bg-neutral-100 focus:bg-neutral-100">
+                                <Download className="mr-2 h-4 w-4" />
+                                Download all files as archive
+                            </a>
+                        }
                     </CardFooter>
                 </Card>
             </div>

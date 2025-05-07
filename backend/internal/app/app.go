@@ -29,9 +29,10 @@ type Config struct {
 
 // Application holds the dependencies for the API
 type Application struct {
-	DB     *sql.DB
-	Router *chi.Mux
-	Config Config
+	DB               *sql.DB
+	Router           *chi.Mux
+	Config           Config
+	ExpirationUpdate chan time.Time
 }
 
 func NewApplication(cfg Config) (*Application, error) {

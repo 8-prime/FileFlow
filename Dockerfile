@@ -1,4 +1,4 @@
-FROM golang:latest as backend-build
+FROM golang:1.24.3-bookworm AS backend-build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN ls -la
 
 RUN CGO_ENABLED=1 GOOS=linux go build -o /fileflow ./cmd/api/main.go
 
-FROM node:alpine AS frontend-build
+FROM node:slim AS frontend-build
 
 WORKDIR /app
 COPY frontend/package.json .

@@ -12,6 +12,7 @@ import { useDownloadInfos, useStats } from "@/api/api"
 import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DownloadInfo, FileInfo } from "@/models/models"
+import { safeCopyToClipboard } from "@/lib/utils"
 
 
 export default function Admin() {
@@ -24,14 +25,14 @@ export default function Admin() {
     }, [stats])
 
     const copyLink = (id: string) => {
-        const link = `${window.location.origin}/download/${id}`
-        navigator.clipboard.writeText(link)
+        const link = `${window.location.origin}/files/${id}`
+        safeCopyToClipboard(link)
         toast("Link copied", {
             description: "The download link has been copied to your clipboard.",
         })
     }
 
-    const deleteUpload = (id: string) => {
+    const deleteUpload = (_: string) => {
         // setUploads(uploads.filter((upload) => upload.id !== id))
         // toast("Upload deleted", {
         //     description: "The upload and all its files have been permanently deleted.",
@@ -146,13 +147,6 @@ function UploadTable({
             month: "short",
             day: "numeric",
         })
-    }
-
-    const humanizeBytes = (bytes: number, decimals: number = 2) => {
-        const units = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-
-        const base = Math.floor(Math.log(bytes) / Math.log(1024));
-        return (bytes / Math.pow(1024, base)).toFixed(decimals) + " " + units[base];
     }
 
     const toggleRow = (id: string) => {

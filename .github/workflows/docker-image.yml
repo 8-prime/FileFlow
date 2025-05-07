@@ -13,6 +13,6 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build and push the Docker image
       run:  |
-        docker login --username 8-prime --password ${{ secrets.GH_PAT }}
+        docker login --username 8-prime --password ${{ secrets.GH_PAT }} ghcr.io
         docker build . --tag ghcr.io/8-prime/file-flow:latest
         docker push ghcr.io/8-prime/file-flow:latest

@@ -1,6 +1,5 @@
 import { useDownloadInfo } from "@/api/api";
 import { Header } from "@/components/Header";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClockAlert, Download } from "lucide-react";

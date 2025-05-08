@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"archive/zip"
 	"backend/internal/model"
 	"backend/internal/repository"
+	"backend/internal/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
@@ -127,6 +130,49 @@ func GetFile(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 	}
 }
 
+func GetFileArchive(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "id")
+
+		upload, err := repo.GetUpload(r.Context(), idParam)
+		if err != nil {
+			http.Error(w, "Failed to get upload", http.StatusBadRequest)
+			return
+		}
+
+		res, err := uploadIsValid(upload, &w, r, cfg, repo, idParam)
+		if !res || err != nil {
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/zip")
+		zipName := fmt.Sprintf("%s.zip", upload.ID)
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", zipName))
+
+		zipWriter := zip.NewWriter(w)
+		defer zipWriter.Close()
+
+		filesDir := path.Join(cfg.FilesPath, upload.ID)
+		entries, err := os.ReadDir(filesDir)
+		if err != nil {
+			http.Error(w, "Failed to read files", http.StatusInternalServerError)
+			return
+		}
+		for _, e := range entries {
+			err := utils.AddFileToZip(zipWriter, utils.FileInfo{
+				Path:      path.Join(filesDir, e.Name()),
+				NameInZip: e.Name(),
+			})
+			if err != nil {
+				log.Printf("Error adding file %s to zip: %v", e.Name(), err)
+				http.Error(w, "Error creating zip archive", http.StatusInternalServerError)
+			}
+		}
+
+		repo.UpdateDownloads(r.Context(), idParam, 1)
+	}
+}
+
 func GetUploads(repo *repository.Repository, cfg *UploadConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -172,7 +218,7 @@ func uploadIsValid(entry model.UploadInfo, w *http.ResponseWriter, r *http.Reque
 	}
 
 	//validate is not expired
-	if entry.EXPIRES == -1 || entry.EXPIRES < time.Now().UTC().Unix() {
+	if entry.EXPIRES != -1 && entry.EXPIRES < time.Now().UTC().Unix() {
 		http.Error(*w, "Upload is expired", http.StatusBadRequest)
 		repo.UpdateStatus(r.Context(), idParam, model.StatusExpired)
 		os.RemoveAll(fsPath)

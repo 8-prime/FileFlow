@@ -21,6 +21,7 @@ func (app *Application) RegisterRoutes() {
 			r.Post("/", handler.HandleUpload(repo, &app.Config.SERVER))
 			r.Get("/{id}", handler.GetDownloadInfo(repo, &app.Config.SERVER))
 			r.Get("/{id}/{file}", handler.GetFile(repo, &app.Config.SERVER))
+			r.Get("/{id}/archive", handler.GetFileArchive(repo, &app.Config.SERVER))
 			r.Delete("/{id}", handler.SoftDeleteEntry(repo, &app.Config.SERVER))
 		})
 

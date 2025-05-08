@@ -155,7 +155,7 @@ func (r *Repository) UpdateDownloads(ctx context.Context, id string, downloads i
 	SET 
 		current_downloads = current_downloads + ?,
 		upload_status = CASE
-			WHEN current_downloads + ? >= max_downloads THEN ?
+			WHEN max_downloads != -1 AND current_downloads + ? >= max_downloads THEN ?
 			ELSE upload_status
     	END
 	WHERE id = ?

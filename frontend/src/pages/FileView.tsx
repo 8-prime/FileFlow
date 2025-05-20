@@ -40,7 +40,7 @@ const FileView = (): JSX.Element => {
         if(remainingDownloads === Infinity){
             return "You can download this file infinitely often"
         }
-        return `You can download this file ${remainingDownloadsremainingDownloads} more time${remainingDownloads > 1 && "s"}`
+        return `You can download this file ${remainingDownloads} more time${remainingDownloads > 1 && "s"}`
     }
 
     const getExpirationString = () : string => {

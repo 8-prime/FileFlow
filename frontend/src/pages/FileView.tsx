@@ -44,7 +44,7 @@ const FileView = (): JSX.Element => {
     }
 
     const getExpirationString = () : string => {
-        if (downloadInfo.metadata.expires === -1 ){
+        if (downloadInfo?.metadata.expires === -1 ){
             return "This upload will never expire"
         }
         return `This upload will expire on ${expiration}`

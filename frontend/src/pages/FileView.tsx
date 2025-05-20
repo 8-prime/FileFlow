@@ -11,6 +11,9 @@ const FileView = (): JSX.Element => {
     const { downloadInfo, error, isLoading } = useDownloadInfo(uploadId)
     const remainingDownloads = useMemo(() => {
         if (!downloadInfo) return undefined
+        if (downloadInfo.metadata.maxDownloads === -1) {
+            return Infinity
+        }
         return downloadInfo.metadata.maxDownloads - downloadInfo.metadata.currentDownloads
     }, [downloadInfo])
 
@@ -29,20 +32,38 @@ const FileView = (): JSX.Element => {
         return `/api/upload/${uploadId}/archive`
     }
 
+
+    const getDownloadInfoString = () : string => {
+        if(isLoading || error){
+            return ""
+        }
+        if(remainingDownloads === Infinity){
+            return "You can download this file infinitely often"
+        }
+        return `You can download this file ${remainingDownloads} more time${(remainingDownloads ?? 0) > 1 && "s"}`
+    }
+
+    const getExpirationString = () : string => {
+        if (downloadInfo?.metadata.expires === -1 ){
+            return "This upload will never expire"
+        }
+        return `This upload will expire on ${expiration}`
+    }
+
     return (
         <div className="grow w-full flex flex-col">
             <Header />
             <div className="grow flex flex-col items-center justify-center p-4">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <CardTitle>Download File{remainingDownloads !== 1 && "s"}</CardTitle>
+                        <CardTitle>Download File{(downloadInfo?.files.length ?? 0) > 1 && "s"}</CardTitle>
                         <CardDescription>
                             {isLoading &&
                                 <Skeleton className="h-4 w-[250px]" />
                             }
                             {!isLoading && !error && !!remainingDownloads &&
                                 <p>
-                                    You can download this file {remainingDownloads} more time{remainingDownloads !== 1 && "s"}
+                                    {getDownloadInfoString()}
                                 </p>
                             }
                         </CardDescription>
@@ -77,7 +98,7 @@ const FileView = (): JSX.Element => {
                         )}
                         {!isLoading && !error &&
                             <div className="text-sm text-muted-foreground">
-                                <p>This upload will expire on {expiration}</p>
+                                <p>{getExpirationString()}</p>
                             </div>
                         }
                     </CardContent>

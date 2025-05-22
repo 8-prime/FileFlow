@@ -163,3 +163,15 @@ func (r *Repository) UpdateDownloads(ctx context.Context, id string, downloads i
 	_, err := r.db.Exec(query, downloads, downloads, model.StatusExpired, id)
 	return err
 }
+
+func (r *Repository) UpdateUpload(ctx context.Context, id string, maxDownloads int64, expiration string) error {
+	query := `
+	UPDATE UPLOADS
+	SET 
+		max_downloads = ?,
+		expiration = ?
+	WHERE id = ?
+	`
+	_, err := r.db.Exec(query, maxDownloads, expiration, id)
+	return err
+}

@@ -36,3 +36,8 @@ type DownloadInfo struct {
 type DownloadRequest struct {
 	FILE string `json:"file"`
 }
+
+type UploadUpate struct {
+	MAX_DOWNLOADS int64  `json:"maxDownloads"`
+	EXPIRATION    string `json:"expiration"`
+}

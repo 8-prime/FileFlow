@@ -3,6 +3,7 @@ package handler
 import (
 	"backend/internal/model"
 	"backend/internal/repository"
+	"encoding/json"
 	"net/http"
 	"os"
 	"path"
@@ -25,5 +26,23 @@ func SoftDeleteEntry(repo *repository.Repository, cfg *UploadConfig) http.Handle
 			http.Error(w, "Failed to remove files for upload", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func UpdateUpload(repo *repository.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "id")
+		var updateRequest model.UploadUpate
+		err := json.NewDecoder(r.Body).Decode(&updateRequest)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		err = repo.UpdateUpload(r.Context(), idParam, updateRequest.MAX_DOWNLOADS, updateRequest.EXPIRATION)
+		if err != nil {
+			http.Error(w, "Failed to update upload", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
 	}
 }

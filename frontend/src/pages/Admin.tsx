@@ -13,6 +13,7 @@ import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DownloadInfo, FileInfo } from "@/models/models"
 import { safeCopyToClipboard } from "@/lib/utils"
+import { UploadEditDialog } from "@/components/UploadEditDialog"
 
 
 export default function Admin() {
@@ -25,6 +26,8 @@ export default function Admin() {
     }, [stats])
 
     const copyLink = (id: string) => {
+        console.log("external copying");
+
         const link = `${window.location.origin}/files/${id}`
         safeCopyToClipboard(link)
         toast("Link copied", {
@@ -172,6 +175,13 @@ function UploadTable({
         return `${files[0].filename}, ...`
     }
 
+    const handleCopy = (e: React.MouseEvent, id: string) => {
+        console.log("copying");
+
+        e.stopPropagation()
+        onCopyLink(id)
+    }
+
     return (
         <div className="rounded-md border">
             <Table>
@@ -235,7 +245,7 @@ function UploadTable({
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => onCopyLink(upload.metadata.id)}>
+                                                <DropdownMenuItem onClick={(e) => handleCopy(e, upload.metadata.id)}>
                                                     <Copy className="mr-2 h-4 w-4" />
                                                     Copy Link
                                                 </DropdownMenuItem>
@@ -245,6 +255,9 @@ function UploadTable({
                                                 >
                                                     <Trash className="mr-2 h-4 w-4" />
                                                     Delete Upload
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem>
+                                                    <UploadEditDialog uploadId={upload.metadata.id} downloadLimit={upload.metadata.maxDownloads} expiration={"never"} />
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

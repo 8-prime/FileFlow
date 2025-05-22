@@ -11,9 +11,13 @@ export type FileConfigurationStepProps = {
     files: File[]
 }
 
-const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, setExpiration, files }: FileConfigurationStepProps) => {
+export type UploadConfigurationProps = Omit<
+    FileConfigurationStepProps,
+    'files'
+>;
+export const UploadConfiguration = ({ setDownloadLimit, downloadLimit, expiration, setExpiration }: UploadConfigurationProps) => {
     return (
-        <div className="space-y-6">
+        <>
             <div className="space-y-2">
                 <Label htmlFor="download-limit">Download Limit</Label>
                 <div className="flex items-center space-x-4">
@@ -50,6 +54,14 @@ const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, se
                     </SelectContent>
                 </Select>
             </div>
+        </>
+    )
+}
+
+const FileConfigurationStep = ({ setDownloadLimit, downloadLimit, expiration, setExpiration, files }: FileConfigurationStepProps) => {
+    return (
+        <div className="space-y-6">
+            <UploadConfiguration setDownloadLimit={setDownloadLimit} downloadLimit={downloadLimit} expiration={expiration} setExpiration={setExpiration} />
 
             <div className="space-y-2">
                 <h3 className="text-sm font-medium">Files to upload ({files.length})</h3>

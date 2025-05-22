@@ -164,7 +164,7 @@ func (r *Repository) UpdateDownloads(ctx context.Context, id string, downloads i
 	return err
 }
 
-func (r *Repository) UpdateUpload(ctx context.Context, id string, maxDownloads int64, expiration string) error {
+func (r *Repository) UpdateUpload(ctx context.Context, id string, maxDownloads int64, expiration int64) error {
 	query := `
 	UPDATE UPLOADS
 	SET 

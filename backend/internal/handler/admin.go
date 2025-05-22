@@ -3,6 +3,7 @@ package handler
 import (
 	"backend/internal/model"
 	"backend/internal/repository"
+	"backend/internal/utils"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -38,7 +39,16 @@ func UpdateUpload(repo *repository.Repository) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		err = repo.UpdateUpload(r.Context(), idParam, updateRequest.MAX_DOWNLOADS, updateRequest.EXPIRATION)
+		if updateRequest.MAX_DOWNLOADS < -1 {
+			http.Error(w, "Invalid max downloads", http.StatusBadRequest)
+			return
+		}
+		timestampFromDuration, err := utils.ParseDurationToTime(updateRequest.EXPIRATION)
+		if err != nil {
+			http.Error(w, "Invalid expiration", http.StatusBadRequest)
+			return
+		}
+		err = repo.UpdateUpload(r.Context(), idParam, updateRequest.MAX_DOWNLOADS, timestampFromDuration)
 		if err != nil {
 			http.Error(w, "Failed to update upload", http.StatusInternalServerError)
 			return

@@ -1,40 +1,22 @@
-import { useEffect, useState } from "react"
-import { ChevronDown, Copy, FileIcon, MoreHorizontal, Trash } from "lucide-react"
+import { useState } from "react"
+import { ChevronDown, FileIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "sonner"
 import { NavLink } from "react-router"
 import { useDownloadInfos, useStats } from "@/api/api"
 import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DownloadInfo, FileInfo } from "@/models/models"
-import { safeCopyToClipboard } from "@/lib/utils"
-import { UploadEditDialog } from "@/components/UploadEditDialog"
 import { CopyButton } from "@/components/CopyButton"
+import React from "react"
 
 
 export default function Admin() {
     const stats = useStats()
     const downloads = useDownloadInfos(0)
-
-    useEffect(() => {
-        console.log(stats);
-
-    }, [stats])
-
-    const copyLink = (id: string) => {
-        console.log("external copying");
-
-        const link = `${window.location.origin}/files/${id}`
-        safeCopyToClipboard(link)
-        toast("Link copied", {
-            description: "The download link has been copied to your clipboard.",
-        })
-    }
 
     const deleteUpload = (_: string) => {
         // setUploads(uploads.filter((upload) => upload.id !== id))
@@ -63,19 +45,19 @@ export default function Admin() {
                             <TabsTrigger value="expired">Expired</TabsTrigger>
                         </TabsList>
                         <TabsContent value="all" className="mt-4">
-                            <UploadTable uploads={downloads.downloadInfos} onCopyLink={copyLink} onDeleteUpload={deleteUpload} />
+                            <UploadTable
+                                uploads={downloads.downloadInfos}
+                                onDeleteUpload={deleteUpload} />
                         </TabsContent>
                         <TabsContent value="active" className="mt-4">
                             <UploadTable
                                 uploads={downloads.downloadInfos.filter((upload) => upload.metadata.status === "active")}
-                                onCopyLink={copyLink}
                                 onDeleteUpload={deleteUpload}
                             />
                         </TabsContent>
                         <TabsContent value="expired" className="mt-4">
                             <UploadTable
                                 uploads={downloads.downloadInfos.filter((upload) => upload.metadata.status === "expired")}
-                                onCopyLink={copyLink}
                                 onDeleteUpload={deleteUpload}
                             />
                         </TabsContent>
@@ -133,11 +115,9 @@ export default function Admin() {
 
 function UploadTable({
     uploads,
-    onCopyLink,
     onDeleteUpload,
 }: Readonly<{
     uploads: DownloadInfo[]
-    onCopyLink: (id: string) => void
     onDeleteUpload: (id: string) => void
 }>) {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
@@ -176,13 +156,6 @@ function UploadTable({
         return `${files[0].filename}, ...`
     }
 
-    const handleCopy = (e: React.MouseEvent, id: string) => {
-        console.log("copying");
-
-        e.stopPropagation()
-        onCopyLink(id)
-    }
-
     return (
         <div className="rounded-md border">
             <Table>
@@ -208,9 +181,8 @@ function UploadTable({
                         </TableRow>
                     ) : (
                         uploads.map((upload) => (
-                            <>
+                            <React.Fragment key={upload.metadata.id}>
                                 <TableRow
-                                    key={upload.metadata.id}
                                     className="cursor-pointer hover:bg-muted/50"
                                     onClick={() => toggleRow(upload.metadata.id)}
                                 >
@@ -268,7 +240,7 @@ function UploadTable({
                                     </TableCell>
                                 </TableRow>
                                 {expandedRows[upload.metadata.id] && (
-                                    <TableRow key={`${upload.metadata.id}-files`} className="bg-muted/50">
+                                    <TableRow className="bg-muted/50">
                                         <TableCell colSpan={9} className="p-0">
                                             <div className="px-4 py-2">
                                                 <h4 className="font-medium mb-2">Files in this upload:</h4>
@@ -290,7 +262,7 @@ function UploadTable({
                                         </TableCell>
                                     </TableRow>
                                 )}
-                            </>
+                            </React.Fragment>
                         ))
                     )}
                 </TableBody>

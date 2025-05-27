@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { DownloadInfo, FileInfo } from "@/models/models"
 import { safeCopyToClipboard } from "@/lib/utils"
 import { UploadEditDialog } from "@/components/UploadEditDialog"
+import { CopyButton } from "@/components/CopyButton"
 
 
 export default function Admin() {
@@ -195,7 +196,7 @@ function UploadTable({
                         <TableHead className="hidden md:table-cell">Expires</TableHead>
                         <TableHead>Downloads</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="text-left">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -237,7 +238,10 @@ function UploadTable({
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <DropdownMenu>
+                                        <CopyButton variant="secondary" text={`${window.location.origin}/files/${upload.metadata.id}`}>
+                                            Copy link
+                                        </CopyButton>
+                                        {/* <DropdownMenu>
                                             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                                 <Button variant="ghost" size="icon">
                                                     <MoreHorizontal className="h-4 w-4" />
@@ -260,7 +264,7 @@ function UploadTable({
                                                     <UploadEditDialog uploadId={upload.metadata.id} downloadLimit={upload.metadata.maxDownloads} expiration={"never"} />
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        </DropdownMenu> */}
                                     </TableCell>
                                 </TableRow>
                                 {expandedRows[upload.metadata.id] && (

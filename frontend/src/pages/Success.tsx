@@ -1,5 +1,3 @@
-
-import { useState } from "react"
 import { Check, Copy, Download } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -7,18 +5,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { NavLink, useParams } from "react-router"
 import { Header } from "@/components/Header"
-import { safeCopyToClipboard } from "@/lib/utils"
+import { CopyButton } from "@/components/CopyButton"
 
 export default function Success() {
-    const [copied, setCopied] = useState(false)
     const { uploadId } = useParams();
     const shareUrl = `${window.location.origin}/files/${uploadId}`
-
-    const copyToClipboard = () => {
-        safeCopyToClipboard(shareUrl)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-    }
 
     return (
         <div className="grow flex flex-col">
@@ -42,10 +33,9 @@ export default function Success() {
 
                         <div className="flex items-center space-x-2">
                             <Input readOnly value={shareUrl} className="font-mono text-sm" />
-                            <Button size="icon" variant="outline" onClick={copyToClipboard} className="shrink-0">
-                                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            <CopyButton size="icon" variant="outline" text={shareUrl} className="shrink-0">
                                 <span className="sr-only">Copy link</span>
-                            </Button>
+                            </CopyButton>
                         </div>
                     </CardContent>
                     <CardFooter>

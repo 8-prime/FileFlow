@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { ChevronDown, FileIcon, Settings2, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,11 +8,7 @@ import { NavLink } from "react-router"
 import { useDownloadInfos, useStats } from "@/api/api"
 import { Header } from "@/components/Header"
 import { Skeleton } from "@/components/ui/skeleton"
-import { DownloadInfo, FileInfo } from "@/models/models"
-import { CopyButton } from "@/components/CopyButton"
-import React from "react"
-import { UploadEditDialog } from "@/components/UploadEditDialog"
-import { Dialog } from "@/components/ui/dialog"
+import { DownloadInfo } from "@/models/models"
 import { AdminTableRow } from "@/components/AdminTableRow"
 
 
@@ -117,8 +112,7 @@ export default function Admin() {
 }
 
 function UploadTable({
-    uploads,
-    onDeleteUpload,
+    uploads
 }: Readonly<{
     uploads: DownloadInfo[]
     onDeleteUpload: (id: string) => void
